@@ -1,0 +1,53 @@
+apiVersion: apps.openshift.io/v1
+kind: DeploymentConfig
+metadata:
+  labels:
+    io.kompose.service: postgres-inventory
+  name: postgres-inventory
+spec:
+  replicas: 1
+  selector:
+    io.kompose.service: postgres-inventory
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        io.kompose.network/finalproject-it460-default: "true"
+        io.kompose.service: postgres-inventory
+    spec:
+      containers:
+        - env:
+            - name: PGDATA
+              value: /data/postgres
+            - name: POSTGRES_DB
+              value: inventory-service
+            - name: POSTGRES_PASSWORD
+              value: mysql
+            - name: POSTGRES_USER
+              value: lechaa
+          image: ' '
+          name: postgres-inventory
+          ports:
+            - containerPort: 5432
+              hostPort: 5432
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /data/postgres
+              name: postgres-inventory-claim0
+      restartPolicy: Always
+      volumes:
+        - name: postgres-inventory-claim0
+          persistentVolumeClaim:
+            claimName: postgres-inventory-claim0
+  test: false
+  triggers:
+    - type: ConfigChange
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+          - postgres-inventory
+        from:
+          kind: ImageStreamTag
+          name: postgres-inventory:latest
+      type: ImageChange

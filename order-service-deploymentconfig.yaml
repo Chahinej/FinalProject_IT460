@@ -1,0 +1,36 @@
+apiVersion: apps.openshift.io/v1
+kind: DeploymentConfig
+metadata:
+  labels:
+    io.kompose.service: order-service
+  name: order-service
+spec:
+  replicas: 1
+  selector:
+    io.kompose.service: order-service
+  template:
+    metadata:
+      labels:
+        io.kompose.network/finalproject-it460-default: "true"
+        io.kompose.service: order-service
+    spec:
+      containers:
+        - env:
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:postgresql://postgres-order:5431/order-service
+            - name: SPRING_PROFILES_ACTIVE
+              value: docker
+          image: ' '
+          name: order-service
+      restartPolicy: Always
+  test: false
+  triggers:
+    - type: ConfigChange
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+          - order-service
+        from:
+          kind: ImageStreamTag
+          name: order-service:latest
+      type: ImageChange

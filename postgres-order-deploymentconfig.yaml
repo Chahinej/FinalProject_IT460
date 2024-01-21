@@ -1,0 +1,56 @@
+apiVersion: apps.openshift.io/v1
+kind: DeploymentConfig
+metadata:
+  labels:
+    io.kompose.service: postgres-order
+  name: postgres-order
+spec:
+  replicas: 1
+  selector:
+    io.kompose.service: postgres-order
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        io.kompose.network/finalproject-it460-default: "true"
+        io.kompose.service: postgres-order
+    spec:
+      containers:
+        - args:
+            - -p
+            - "5431"
+          env:
+            - name: PGDATA
+              value: /data/postgres
+            - name: POSTGRES_DB
+              value: order-service
+            - name: POSTGRES_PASSWORD
+              value: mysql
+            - name: POSTGRES_USER
+              value: lechaa
+          image: ' '
+          name: postgres-order
+          ports:
+            - containerPort: 5431
+              hostPort: 5431
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /data/postgres
+              name: postgres-order-claim0
+      restartPolicy: Always
+      volumes:
+        - name: postgres-order-claim0
+          persistentVolumeClaim:
+            claimName: postgres-order-claim0
+  test: false
+  triggers:
+    - type: ConfigChange
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+          - postgres-order
+        from:
+          kind: ImageStreamTag
+          name: postgres-order:latest
+      type: ImageChange

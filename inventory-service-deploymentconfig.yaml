@@ -1,0 +1,36 @@
+apiVersion: apps.openshift.io/v1
+kind: DeploymentConfig
+metadata:
+  labels:
+    io.kompose.service: inventory-service
+  name: inventory-service
+spec:
+  replicas: 1
+  selector:
+    io.kompose.service: inventory-service
+  template:
+    metadata:
+      labels:
+        io.kompose.network/finalproject-it460-default: "true"
+        io.kompose.service: inventory-service
+    spec:
+      containers:
+        - env:
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:postgresql://postgres-inventory:5432/inventory-service
+            - name: SPRING_PROFILES_ACTIVE
+              value: docker
+          image: ' '
+          name: inventory-service
+      restartPolicy: Always
+  test: false
+  triggers:
+    - type: ConfigChange
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+          - inventory-service
+        from:
+          kind: ImageStreamTag
+          name: inventory-service:latest
+      type: ImageChange

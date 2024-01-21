@@ -1,0 +1,34 @@
+apiVersion: apps.openshift.io/v1
+kind: DeploymentConfig
+metadata:
+  labels:
+    io.kompose.service: notification-service
+  name: notification-service
+spec:
+  replicas: 1
+  selector:
+    io.kompose.service: notification-service
+  template:
+    metadata:
+      labels:
+        io.kompose.network/finalproject-it460-default: "true"
+        io.kompose.service: notification-service
+    spec:
+      containers:
+        - env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: docker
+          image: ' '
+          name: notification-service
+      restartPolicy: Always
+  test: false
+  triggers:
+    - type: ConfigChange
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+          - notification-service
+        from:
+          kind: ImageStreamTag
+          name: notification-service:latest
+      type: ImageChange
