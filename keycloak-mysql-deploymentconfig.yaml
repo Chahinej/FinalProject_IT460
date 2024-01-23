@@ -1,0 +1,49 @@
+apiVersion: apps.openshift.io/v1
+kind: DeploymentConfig
+metadata:
+  labels:
+    io.kompose.service: keycloak-mysql
+  name: keycloak-mysql
+spec:
+  replicas: 1
+  selector:
+    io.kompose.service: keycloak-mysql
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        io.kompose.network/finalproject-it460-default: "true"
+        io.kompose.service: keycloak-mysql
+    spec:
+      containers:
+        - env:
+            - name: MYSQL_DATABASE
+              value: keycloak
+            - name: MYSQL_PASSWORD
+              value: password
+            - name: MYSQL_ROOT_PASSWORD
+              value: root
+            - name: MYSQL_USER
+              value: keycloak
+          image: ' '
+          name: keycloak-mysql
+          volumeMounts:
+            - mountPath: /var/lib/mysql
+              name: keycloak-mysql-claim0
+      restartPolicy: Always
+      volumes:
+        - name: keycloak-mysql-claim0
+          persistentVolumeClaim:
+            claimName: keycloak-mysql-claim0
+  test: false
+  triggers:
+    - type: ConfigChange
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+          - keycloak-mysql
+        from:
+          kind: ImageStreamTag
+          name: keycloak-mysql:5.7
+      type: ImageChange
